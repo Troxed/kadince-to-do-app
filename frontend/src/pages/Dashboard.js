@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/axios';
 import Modal from '../components/Modal/Modal';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash, faCheck, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { format, isToday, isTomorrow, isYesterday, parseISO, isBefore, subDays } from 'date-fns';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
@@ -13,7 +16,7 @@ const Dashboard = () => {
     const [description, setDescription] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [priority, setPriority] = useState('low');
-    const [filter, setFilter] = useState('all'); // Add filter state
+    const [filter, setFilter] = useState('all');
 
     useEffect(() => {
         const fetchTodos = async () => {
@@ -107,11 +110,49 @@ const Dashboard = () => {
     };
 
     const filteredTodos = todos.filter(todo => {
-        if (filter === 'all') return true;
-        if (filter === 'completed') return todo.completed;
-        if (filter === 'pending') return !todo.completed;
-        return true; // Make sure to return true for all other cases
+        if (filter === 'completed') {
+            return todo.completed;
+        } else if (filter === 'pending') {
+            return !todo.completed;
+        } else {
+            return true;
+        }
     });
+
+    const groupTodosByDate = (todos) => {
+        const overdue = [];
+        const grouped = todos.reduce((groups, todo) => {
+            const date = todo.due_date || 'No due date';
+            const todoDate = date !== 'No due date' ? parseISO(date) : null;
+            if (todoDate && isBefore(todoDate, subDays(new Date(), 1))) {
+                overdue.push(todo);
+            } else {
+                if (!groups[date]) {
+                    groups[date] = [];
+                }
+                groups[date].push(todo);
+            }
+            return groups;
+        }, {});
+        return { overdue, grouped };
+    };
+
+    const formatDate = (dateString) => {
+        const date = parseISO(dateString);
+        if (isToday(date)) {
+            return 'Today';
+        } else if (isTomorrow(date)) {
+            return 'Tomorrow';
+        } else if (isYesterday(date)) {
+            return 'Yesterday';
+        } else {
+            return format(date, 'EEEE, MMMM do');
+        }
+    };
+
+    const { overdue, grouped } = groupTodosByDate(filteredTodos);
+
+    const currentDate = format(new Date(), 'EEEE, MMMM do, yyyy');
 
     if (loading) {
         return <div>Loading...</div>;
@@ -123,7 +164,7 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-container">
-            <h2>Dashboard</h2>
+            <h2>{currentDate}</h2>
             <div className="filters">
                 <button onClick={() => setFilter('all')}>All</button>
                 <button onClick={() => setFilter('completed')}>Completed</button>
@@ -179,22 +220,44 @@ const Dashboard = () => {
                 </form>
             </Modal>
             <div className="todos-list">
-                {filteredTodos.length > 0 ? (
-                    filteredTodos.map((todo) => (
-                        <div key={todo.id} className="todo-item">
-                            <h3>{todo.title}</h3>
-                            <p>{todo.description}</p>
-                            <p>Due: {todo.due_date || 'No due date'}</p>
-                            <p>Priority: {todo.priority}</p>
-                            <p>Status: {todo.completed ? 'Completed' : 'Pending'}</p>
-                            <button onClick={() => handleEdit(todo)}>Edit</button>
-                            <button onClick={() => handleDelete(todo.id)}>Delete</button>
-                            <button onClick={() => handleComplete(todo)}>{todo.completed ? 'Mark as Incomplete' : 'Mark as Complete'}</button>
-                        </div>
-                    ))
-                ) : (
-                    <p>No to-dos available.</p>
+                {overdue.length > 0 && (
+                    <div>
+                        <h3 className="todo-date-header">Overdue</h3>
+                        {overdue.map(todo => (
+                            <div key={todo.id} className="todo-item">
+                                <h3>{todo.title}</h3>
+                                <p>{todo.description}</p>
+                                <p>Due: {todo.due_date || 'No due date'}</p>
+                                <p>Priority: {todo.priority}</p>
+                                <p>Status: {todo.completed ? 'Completed' : 'Pending'}</p>
+                                <button onClick={() => handleEdit(todo)}><FontAwesomeIcon icon={faEdit} /></button>
+                                <button onClick={() => handleDelete(todo.id)}><FontAwesomeIcon icon={faTrash} /></button>
+                                <button onClick={() => handleComplete(todo)}>
+                                    <FontAwesomeIcon icon={todo.completed ? faUndo : faCheck} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 )}
+                {Object.keys(grouped).map(date => (
+                    <div key={date}>
+                        <h3 className="todo-date-header">{date !== 'No due date' ? formatDate(date) : date}</h3>
+                        {grouped[date].map(todo => (
+                            <div key={todo.id} className="todo-item">
+                                <h3>{todo.title}</h3>
+                                <p>{todo.description}</p>
+                                <p>Due: {todo.due_date || 'No due date'}</p>
+                                <p>Priority: {todo.priority}</p>
+                                <p>Status: {todo.completed ? 'Completed' : 'Pending'}</p>
+                                <button onClick={() => handleEdit(todo)}><FontAwesomeIcon icon={faEdit} /></button>
+                                <button onClick={() => handleDelete(todo.id)}><FontAwesomeIcon icon={faTrash} /></button>
+                                <button onClick={() => handleComplete(todo)}>
+                                    <FontAwesomeIcon icon={todo.completed ? faUndo : faCheck} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                ))}
             </div>
         </div>
     );

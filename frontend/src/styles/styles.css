@@ -3,12 +3,14 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f0f0f0;
+    background-color: #fdf1f1; /* Background color matching the website */
+    color: #333;
 }
 
 h2 {
     text-align: center;
     margin-top: 20px;
+    color: #333;
 }
 
 /* Login and Signup Containers */
@@ -43,10 +45,143 @@ h2 {
 
 button {
     padding: 10px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: #c8e471;
+    color: #333;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     margin: 5px;
+}
+
+button:hover {
+    background-color: #a4d255; /* Slightly darker shade for hover effect */
+}
+
+/* Filters */
+.filters {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.filters button {
+    padding: 10px 20px;
+    margin: 0 10px;
+    background-color: #c8e471; /* Button color matching the website */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.filters button:hover {
+    background-color: #a4d255; /* Slightly darker shade for hover effect */
+}
+
+/* Styles for the Dashboard page */
+.dashboard-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.todo-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.todo-item {
+    background-color: #f9f9f9;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.todo-item h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
+}
+
+.todo-item p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.todo-item button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #c8e471; /* Button color matching the website */
+    color: white;
+    cursor: pointer;
+}
+
+.todo-item button:hover {
+    background-color: #a4d255; /* Slightly darker shade for hover effect */
+}
+
+.todo-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.create-todo-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.create-todo-form .form-group {
+    margin-bottom: 15px;
+}
+
+.create-todo-form label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.create-todo-form input,
+.create-todo-form select,
+.create-todo-form textarea {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+}
+
+.create-todo-form button {
+    padding: 10px;
+    background-color: #c8e471; /* Button color matching the website */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.create-todo-form button:hover {
+    background-color: #a4d255; /* Slightly darker shade for hover effect */
 }

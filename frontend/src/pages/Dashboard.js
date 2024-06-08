@@ -13,7 +13,7 @@ const Dashboard = () => {
     const [description, setDescription] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [priority, setPriority] = useState('low');
-    const [filter, setFilter] = useState('all');
+    const [filter, setFilter] = useState('all'); // Add filter state
 
     useEffect(() => {
         const fetchTodos = async () => {
@@ -21,7 +21,6 @@ const Dashboard = () => {
                 const token = localStorage.getItem('token');
                 const response = await apiClient.get('/todos', {
                     headers: { Authorization: `Bearer ${token}` },
-                    params: { filter }
                 });
                 setTodos(response.data);
                 setLoading(false);
@@ -32,7 +31,7 @@ const Dashboard = () => {
         };
 
         fetchTodos();
-    }, [filter]);
+    }, []);
 
     const handleCreateOrUpdateTodo = async (e) => {
         e.preventDefault();
@@ -107,6 +106,13 @@ const Dashboard = () => {
         }
     };
 
+    const filteredTodos = todos.filter(todo => {
+        if (filter === 'all') return true;
+        if (filter === 'completed') return todo.completed;
+        if (filter === 'pending') return !todo.completed;
+        return true; // Make sure to return true for all other cases
+    });
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -118,6 +124,11 @@ const Dashboard = () => {
     return (
         <div className="dashboard-container">
             <h2>Dashboard</h2>
+            <div className="filters">
+                <button onClick={() => setFilter('all')}>All</button>
+                <button onClick={() => setFilter('completed')}>Completed</button>
+                <button onClick={() => setFilter('pending')}>Pending</button>
+            </div>
             <button onClick={() => {
                 setShowForm(true);
                 setEditingTodo(null);
@@ -128,11 +139,6 @@ const Dashboard = () => {
             }}>
                 Create To-Do
             </button>
-            <div className="filters">
-                <button onClick={() => setFilter('all')}>All</button>
-                <button onClick={() => setFilter('pending')}>Pending</button>
-                <button onClick={() => setFilter('complete')}>Complete</button>
-            </div>
             <Modal show={showForm} handleClose={() => setShowForm(false)}>
                 <form onSubmit={handleCreateOrUpdateTodo} className="create-todo-form">
                     <div className="form-group">
@@ -173,8 +179,8 @@ const Dashboard = () => {
                 </form>
             </Modal>
             <div className="todos-list">
-                {todos.length > 0 ? (
-                    todos.map((todo) => (
+                {filteredTodos.length > 0 ? (
+                    filteredTodos.map((todo) => (
                         <div key={todo.id} className="todo-item">
                             <h3>{todo.title}</h3>
                             <p>{todo.description}</p>

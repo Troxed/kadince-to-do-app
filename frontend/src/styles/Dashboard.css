@@ -6,6 +6,7 @@
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 60px; /* Add space between navbar and dashboard */
 }
 
 .todo-list {
@@ -14,22 +15,28 @@
 }
 
 .todo-item {
-    background-color: #f9f9f9;
+    background-color: #fdf1f1; /* Match the background color from the reference */
     margin: 10px 0;
     padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px; /* More rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slightly larger shadow for more depth */
+    transition: transform 0.2s, box-shadow 0.2s; /* Add smooth hover effects */
+}
+
+.todo-item:hover {
+    transform: translateY(-5px); /* Slight lift effect on hover */
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15); /* Darker shadow on hover */
 }
 
 .todo-item h3 {
     margin: 0;
     font-size: 1.25rem;
-    color: #333;
+    color: #333; /* Text color */
 }
 
 .todo-item p {
     margin: 5px 0;
-    color: #666;
+    color: #333; /* Text color */
 }
 
 .todo-item button {
@@ -37,13 +44,14 @@
     padding: 5px 10px;
     border: none;
     border-radius: 5px;
-    background-color: #007bff;
-    color: white;
+    background-color: #c8e471; /* Button color from the reference */
+    color: #333; /* Text color */
     cursor: pointer;
+    transition: background-color 0.2s; /* Smooth color change on hover */
 }
 
 .todo-item button:hover {
-    background-color: #0056b3;
+    background-color: #a4c249; /* Slightly darker green on hover */
 }
 
 .todo-modal {
@@ -80,7 +88,7 @@
 .create-todo-form label {
     margin-bottom: 5px;
     font-weight: bold;
-    color: #333;
+    color: #333; /* Text color */
 }
 
 .create-todo-form input,
@@ -95,15 +103,16 @@
 
 .create-todo-form button {
     padding: 10px;
-    background-color: #007bff;
-    color: white;
+    background-color: #c8e471; /* Button color from the reference */
+    color: #333; /* Text color */
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.2s; /* Smooth color change on hover */
 }
 
 .create-todo-form button:hover {
-    background-color: #0056b3;
+    background-color: #a4c249; /* Slightly darker green on hover */
 }
 
 /* Filters */
@@ -116,13 +125,14 @@
 .filters button {
     padding: 10px 20px;
     margin: 0 10px;
-    background-color: #007bff;
-    color: white;
+    background-color: #c8e471; /* Button color from the reference */
+    color: #333; /* Text color */
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.2s; /* Smooth color change on hover */
 }
 
 .filters button:hover {
-    background-color: #0056b3;
+    background-color: #a4c249; /* Slightly darker green on hover */
 }

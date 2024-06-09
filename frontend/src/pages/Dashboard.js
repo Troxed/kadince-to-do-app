@@ -3,7 +3,7 @@ import apiClient from '../api/axios';
 import '../styles/Dashboard.css';
 import Modal from '../components/Modal/Modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt, faEdit, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt, faEdit, faCheck, faUndo, faPlus } from '@fortawesome/free-solid-svg-icons';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'; // Import the plugin
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'; // Import the plugin
@@ -157,7 +157,9 @@ const Dashboard = () => {
             </div>
             <div className="view-title">{getTitle()}</div>
             <div className="date-title">{dayjs().format('dddd, MMMM D, YYYY')}</div>
-            <button onClick={() => setShowForm(true)} className="create-todo-button">Create To-Do</button>
+            <button onClick={() => setShowForm(true)} className="create-todo-button" title="Create To-Do">
+                <FontAwesomeIcon icon={faPlus} />
+            </button>
             <ul className="todo-list">
                 {Object.entries(filteredTodos.reduce((acc, todo) => {
                     const dateKey = dayjs(todo.due_date).format('YYYY-MM-DD');
@@ -178,9 +180,9 @@ const Dashboard = () => {
                                         <p>{todo.description}</p>
                                         <p>Due: {todo.due_date || 'No due date'}</p>
                                         <p>Priority: {todo.priority}</p>
-                                        <button onClick={() => handleEdit(todo)}><FontAwesomeIcon icon={faEdit} /></button>
-                                        <button onClick={() => handleDelete(todo.id)}><FontAwesomeIcon icon={faTrashAlt} /></button>
-                                        <button onClick={() => handleComplete(todo)}>{todo.completed ? <FontAwesomeIcon icon={faTimes} /> : <FontAwesomeIcon icon={faCheck} />}</button>
+                                        <button onClick={() => handleEdit(todo)} title="Edit"><FontAwesomeIcon icon={faEdit} /></button>
+                                        <button onClick={() => handleDelete(todo.id)} title="Delete"><FontAwesomeIcon icon={faTrashAlt} /></button>
+                                        <button onClick={() => handleComplete(todo)} title={todo.completed ? "Incomplete" : "Complete"}>{todo.completed ? <FontAwesomeIcon icon={faUndo} /> : <FontAwesomeIcon icon={faCheck} />}</button>
                                     </li>
                                 ))}
                             </ul>

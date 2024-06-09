@@ -118,8 +118,8 @@ const Dashboard = () => {
         if (filter === 'all') return true;
         if (filter === 'pending') return !todo.completed;
         if (filter === 'completed') return todo.completed;
-        if (filter === 'myDay') return !todo.completed && dayjs(todo.due_date).isSame(dayjs(), 'day');
-        if (filter === 'myWeek') return !todo.completed && dayjs(todo.due_date).isSameOrBefore(dayjs().add(7, 'day')) && dayjs(todo.due_date).isAfter(dayjs().subtract(1, 'day'));
+        if (filter === 'myDay') return dayjs(todo.due_date).isSame(dayjs(), 'day') && !todo.completed;
+        if (filter === 'myWeek') return dayjs(todo.due_date).isSameOrBefore(dayjs().add(7, 'day')) && dayjs(todo.due_date).isAfter(dayjs().subtract(1, 'day')) && !todo.completed;
         return false; // Ensures a boolean value is returned
     });
 
@@ -149,17 +149,15 @@ const Dashboard = () => {
     return (
         <div className="dashboard-container">
             <div className="filters">
-                <button onClick={() => setFilter('myDay')}>My Day</button>
-                <button onClick={() => setFilter('myWeek')}>My Week</button>
-                <button onClick={() => setFilter('pending')}>Pending</button>
-                <button onClick={() => setFilter('completed')}>Completed</button>
-                <button onClick={() => setFilter('all')}>All</button>
+                <button onClick={() => setFilter('myDay')} className={filter === 'myDay' ? 'active' : ''}>My Day</button>
+                <button onClick={() => setFilter('myWeek')} className={filter === 'myWeek' ? 'active' : ''}>My Week</button>
+                <button onClick={() => setFilter('pending')} className={filter === 'pending' ? 'active' : ''}>Pending</button>
+                <button onClick={() => setFilter('completed')} className={filter === 'completed' ? 'active' : ''}>Completed</button>
+                <button onClick={() => setFilter('all')} className={filter === 'all' ? 'active' : ''}>All</button>
             </div>
             <div className="view-title">{getTitle()}</div>
             <div className="date-title">{dayjs().format('dddd, MMMM D, YYYY')}</div>
-            <button onClick={() => setShowForm(true)} className="create-todo-button" title="Create To-Do">
-                <FontAwesomeIcon icon={faPlus} />
-            </button>
+            <button onClick={() => setShowForm(true)} className="create-todo-button" data-tooltip="Create To-Do"><FontAwesomeIcon icon={faPlus} /></button>
             <ul className="todo-list">
                 {Object.entries(filteredTodos.reduce((acc, todo) => {
                     const dateKey = dayjs(todo.due_date).format('YYYY-MM-DD');
@@ -180,9 +178,9 @@ const Dashboard = () => {
                                         <p>{todo.description}</p>
                                         <p>Due: {todo.due_date || 'No due date'}</p>
                                         <p>Priority: {todo.priority}</p>
-                                        <button onClick={() => handleEdit(todo)} title="Edit"><FontAwesomeIcon icon={faEdit} /></button>
-                                        <button onClick={() => handleDelete(todo.id)} title="Delete"><FontAwesomeIcon icon={faTrashAlt} /></button>
-                                        <button onClick={() => handleComplete(todo)} title={todo.completed ? "Incomplete" : "Complete"}>{todo.completed ? <FontAwesomeIcon icon={faUndo} /> : <FontAwesomeIcon icon={faCheck} />}</button>
+                                        <button onClick={() => handleEdit(todo)} className="todo-button" data-tooltip="Edit To-Do"><FontAwesomeIcon icon={faEdit} /></button>
+                                        <button onClick={() => handleDelete(todo.id)} className="todo-button" data-tooltip="Delete To-Do"><FontAwesomeIcon icon={faTrashAlt} /></button>
+                                        <button onClick={() => handleComplete(todo)} className="todo-button" data-tooltip={todo.completed ? "Mark as Incomplete" : "Mark as Complete"}>{todo.completed ? <FontAwesomeIcon icon={faUndo} /> : <FontAwesomeIcon icon={faCheck} />}</button>
                                     </li>
                                 ))}
                             </ul>

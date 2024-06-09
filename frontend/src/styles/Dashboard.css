@@ -2,15 +2,22 @@
 .dashboard-container {
     padding: 20px;
     max-width: 800px;
-    margin: 0 auto;
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    margin: 40px auto 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .todo-list {
     list-style-type: none;
     padding: 0;
+    margin-top: 10px;
+    max-height: 50vh;
+    overflow-y: auto;
+    flex-grow: 1;
 }
 
 .todo-item {
@@ -108,23 +115,30 @@
 
 /* Filters */
 .filters {
-    margin-top: 20px;
     display: flex;
-    justify-content: center;
+    position: absolute;
+    top: -40px;
+    left: 0;
 }
 
 .filters button {
     padding: 10px 20px;
-    margin: 0 10px;
-    background-color: #c8e471;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    margin-right: -1px;
+    background-color: #fff;
     color: #333;
-    border: none;
-    border-radius: 5px;
     cursor: pointer;
 }
 
-.filters button:hover {
-    background-color: #a4c249;
+.filters .active {
+    background-color: #c8e471;
+    color: #333;
+}
+
+.filters button:not(.active):hover {
+    background-color: #f0f0f0;
 }
 
 .date-title {
@@ -148,4 +162,62 @@
     list-style: none;
     padding: 0;
     margin: 0;
+}
+
+/* Tooltip styles */
+.todo-button[data-tooltip] {
+    position: relative;
+}
+
+.todo-button[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+    font-size: 0.75rem;
+}
+
+
+/* Create To-Do button */
+.create-todo-button {
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background-color: #c8e471;
+    color: #333;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+}
+
+.create-todo-button:hover {
+    background-color: #a4c249;
+}
+
+.create-todo-button[data-tooltip] {
+    position: relative;
+}
+
+.create-todo-button[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+    font-size: 0.75rem;
 }

@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/axios';
+import '../styles/Dashboard.css';
 import Modal from '../components/Modal/Modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faCheck, faUndo } from '@fortawesome/free-solid-svg-icons';
-import { format, isToday, isTomorrow, isYesterday, parseISO, isBefore, subDays } from 'date-fns';
-import '../styles/Dashboard.css';
+import { faTrashAlt, faEdit, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import dayjs from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'; // Import the plugin
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'; // Import the plugin
+
+dayjs.extend(isSameOrBefore); // Extend dayjs with the plugin
+dayjs.extend(isSameOrAfter); // Extend dayjs with the plugin
 
 const Dashboard = () => {
     const [todos, setTodos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [filter, setFilter] = useState('myDay');
     const [showForm, setShowForm] = useState(false);
     const [editingTodo, setEditingTodo] = useState(null);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [priority, setPriority] = useState('low');
-    const [filter, setFilter] = useState('all');
 
     useEffect(() => {
         const fetchTodos = async () => {
@@ -110,49 +115,13 @@ const Dashboard = () => {
     };
 
     const filteredTodos = todos.filter(todo => {
-        if (filter === 'completed') {
-            return todo.completed;
-        } else if (filter === 'pending') {
-            return !todo.completed;
-        } else {
-            return true;
-        }
+        if (filter === 'all') return true;
+        if (filter === 'pending') return !todo.completed;
+        if (filter === 'completed') return todo.completed;
+        if (filter === 'myDay') return dayjs(todo.due_date).isSame(dayjs(), 'day');
+        if (filter === 'myWeek') return dayjs(todo.due_date).isSameOrBefore(dayjs().add(7, 'day')) && dayjs(todo.due_date).isAfter(dayjs().subtract(1, 'day'));
+        return false; // Ensures a boolean value is returned
     });
-
-    const groupTodosByDate = (todos) => {
-        const overdue = [];
-        const grouped = todos.reduce((groups, todo) => {
-            const date = todo.due_date || 'No due date';
-            const todoDate = date !== 'No due date' ? parseISO(date) : null;
-            if (todoDate && isBefore(todoDate, subDays(new Date(), 1))) {
-                overdue.push(todo);
-            } else {
-                if (!groups[date]) {
-                    groups[date] = [];
-                }
-                groups[date].push(todo);
-            }
-            return groups;
-        }, {});
-        return { overdue, grouped };
-    };
-
-    const formatDate = (dateString) => {
-        const date = parseISO(dateString);
-        if (isToday(date)) {
-            return 'Today';
-        } else if (isTomorrow(date)) {
-            return 'Tomorrow';
-        } else if (isYesterday(date)) {
-            return 'Yesterday';
-        } else {
-            return format(date, 'EEEE, MMMM do');
-        }
-    };
-
-    const { overdue, grouped } = groupTodosByDate(filteredTodos);
-
-    const currentDate = format(new Date(), 'EEEE, MMMM do, yyyy');
 
     if (loading) {
         return <div>Loading...</div>;
@@ -162,24 +131,63 @@ const Dashboard = () => {
         return <div>{error}</div>;
     }
 
+    const getTitle = () => {
+        switch (filter) {
+            case 'myDay':
+                return 'My Day';
+            case 'myWeek':
+                return 'My Week';
+            case 'pending':
+                return 'Pending';
+            case 'completed':
+                return 'Completed';
+            default:
+                return 'All To-Dos';
+        }
+    };
+
     return (
         <div className="dashboard-container">
-            <h2>{currentDate}</h2>
             <div className="filters">
-                <button onClick={() => setFilter('all')}>All</button>
-                <button onClick={() => setFilter('completed')}>Completed</button>
+                <button onClick={() => setFilter('myDay')}>My Day</button>
+                <button onClick={() => setFilter('myWeek')}>My Week</button>
                 <button onClick={() => setFilter('pending')}>Pending</button>
+                <button onClick={() => setFilter('completed')}>Completed</button>
+                <button onClick={() => setFilter('all')}>All</button>
             </div>
-            <button onClick={() => {
-                setShowForm(true);
-                setEditingTodo(null);
-                setTitle('');
-                setDescription('');
-                setDueDate('');
-                setPriority('low');
-            }}>
-                Create To-Do
-            </button>
+            <div className="view-title">{getTitle()}</div>
+            <div className="date-title">{dayjs().format('dddd, MMMM D, YYYY')}</div>
+            <button onClick={() => setShowForm(true)} className="create-todo-button">Create To-Do</button>
+            <ul className="todo-list">
+                {Object.entries(filteredTodos.reduce((acc, todo) => {
+                    const dateKey = dayjs(todo.due_date).format('YYYY-MM-DD');
+                    if (!acc[dateKey]) acc[dateKey] = [];
+                    acc[dateKey].push(todo);
+                    return acc;
+                }, {}))
+                    .sort(([a], [b]) => new Date(a) - new Date(b))
+                    .map(([date, todos]) => (
+                        <li key={date}>
+                            {filter !== 'myDay' && (
+                                <h3>{dayjs(date).isSame(dayjs(), 'day') ? 'Today' : dayjs(date).isSame(dayjs().add(1, 'day'), 'day') ? 'Tomorrow' : dayjs(date).isSame(dayjs().subtract(1, 'day'), 'day') ? 'Yesterday' : dayjs(date).format('dddd, MMMM D')}</h3>
+                            )}
+                            <ul className="todo-date-group">
+                                {todos.map(todo => (
+                                    <li key={todo.id} className="todo-item">
+                                        <h3>{todo.title}</h3>
+                                        <p>{todo.description}</p>
+                                        <p>Due: {todo.due_date || 'No due date'}</p>
+                                        <p>Priority: {todo.priority}</p>
+                                        <p>Status: {todo.completed ? 'Completed' : 'Pending'}</p>
+                                        <button onClick={() => handleEdit(todo)}><FontAwesomeIcon icon={faEdit} /></button>
+                                        <button onClick={() => handleDelete(todo.id)}><FontAwesomeIcon icon={faTrashAlt} /></button>
+                                        <button onClick={() => handleComplete(todo)}>{todo.completed ? <FontAwesomeIcon icon={faTimes} /> : <FontAwesomeIcon icon={faCheck} />}</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                    ))}
+            </ul>
             <Modal show={showForm} handleClose={() => setShowForm(false)}>
                 <form onSubmit={handleCreateOrUpdateTodo} className="create-todo-form">
                     <div className="form-group">
@@ -219,46 +227,6 @@ const Dashboard = () => {
                     <button type="submit">{editingTodo ? 'Update' : 'Create'}</button>
                 </form>
             </Modal>
-            <div className="todos-list">
-                {overdue.length > 0 && (
-                    <div>
-                        <h3 className="todo-date-header">Overdue</h3>
-                        {overdue.map(todo => (
-                            <div key={todo.id} className="todo-item">
-                                <h3>{todo.title}</h3>
-                                <p>{todo.description}</p>
-                                <p>Due: {todo.due_date || 'No due date'}</p>
-                                <p>Priority: {todo.priority}</p>
-                                <p>Status: {todo.completed ? 'Completed' : 'Pending'}</p>
-                                <button onClick={() => handleEdit(todo)}><FontAwesomeIcon icon={faEdit} /></button>
-                                <button onClick={() => handleDelete(todo.id)}><FontAwesomeIcon icon={faTrash} /></button>
-                                <button onClick={() => handleComplete(todo)}>
-                                    <FontAwesomeIcon icon={todo.completed ? faUndo : faCheck} />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-                {Object.keys(grouped).map(date => (
-                    <div key={date}>
-                        <h3 className="todo-date-header">{date !== 'No due date' ? formatDate(date) : date}</h3>
-                        {grouped[date].map(todo => (
-                            <div key={todo.id} className="todo-item">
-                                <h3>{todo.title}</h3>
-                                <p>{todo.description}</p>
-                                <p>Due: {todo.due_date || 'No due date'}</p>
-                                <p>Priority: {todo.priority}</p>
-                                <p>Status: {todo.completed ? 'Completed' : 'Pending'}</p>
-                                <button onClick={() => handleEdit(todo)}><FontAwesomeIcon icon={faEdit} /></button>
-                                <button onClick={() => handleDelete(todo.id)}><FontAwesomeIcon icon={faTrash} /></button>
-                                <button onClick={() => handleComplete(todo)}>
-                                    <FontAwesomeIcon icon={todo.completed ? faUndo : faCheck} />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                ))}
-            </div>
         </div>
     );
 };

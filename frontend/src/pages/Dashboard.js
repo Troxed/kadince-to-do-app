@@ -118,8 +118,8 @@ const Dashboard = () => {
         if (filter === 'all') return true;
         if (filter === 'pending') return !todo.completed;
         if (filter === 'completed') return todo.completed;
-        if (filter === 'myDay') return dayjs(todo.due_date).isSame(dayjs(), 'day');
-        if (filter === 'myWeek') return dayjs(todo.due_date).isSameOrBefore(dayjs().add(7, 'day')) && dayjs(todo.due_date).isAfter(dayjs().subtract(1, 'day'));
+        if (filter === 'myDay') return !todo.completed && dayjs(todo.due_date).isSame(dayjs(), 'day');
+        if (filter === 'myWeek') return !todo.completed && dayjs(todo.due_date).isSameOrBefore(dayjs().add(7, 'day')) && dayjs(todo.due_date).isAfter(dayjs().subtract(1, 'day'));
         return false; // Ensures a boolean value is returned
     });
 
@@ -178,7 +178,6 @@ const Dashboard = () => {
                                         <p>{todo.description}</p>
                                         <p>Due: {todo.due_date || 'No due date'}</p>
                                         <p>Priority: {todo.priority}</p>
-                                        <p>Status: {todo.completed ? 'Completed' : 'Pending'}</p>
                                         <button onClick={() => handleEdit(todo)}><FontAwesomeIcon icon={faEdit} /></button>
                                         <button onClick={() => handleDelete(todo.id)}><FontAwesomeIcon icon={faTrashAlt} /></button>
                                         <button onClick={() => handleComplete(todo)}>{todo.completed ? <FontAwesomeIcon icon={faTimes} /> : <FontAwesomeIcon icon={faCheck} />}</button>

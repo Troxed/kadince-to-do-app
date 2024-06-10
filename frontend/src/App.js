@@ -5,6 +5,7 @@ import Signup from './pages/Signup';
 import Account from './pages/Account';
 import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar/Navbar';
+import PrivateRoute from './components/PrivateRoute';
 import './styles/styles.css';
 
 function App() {
@@ -21,8 +22,8 @@ function App() {
             <Routes>
                 <Route path="/" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/account" element={<Account />} />
+                <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+                <Route path="/account" element={<PrivateRoute><Account /></PrivateRoute>} />
             </Routes>
         </Router>
     );

@@ -1,28 +1,31 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import apiClient from '../api/axios';
+import axios from 'axios';
 
 const Signup = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
+    const [message, setMessage] = useState('');
 
-    const handleSubmit = async (e) => {
+    const handleSignup = async (e) => {
         e.preventDefault();
         try {
-            await apiClient.post('/register', { username, email, password });
-            navigate('/');
+            const response = await axios.post('http://localhost:5000/register', {
+                username,
+                email,
+                password,
+            });
+            setMessage(response.data.message);
         } catch (err) {
-            setError('Error during registration. Please try again.');
+            setMessage(err.response.data.message || 'Error registering');
         }
     };
 
     return (
         <div className="signup-container">
-            <h2>Create an account</h2>
-            <form onSubmit={handleSubmit}>
+            <h2>Sign Up</h2>
+            {message && <p>{message}</p>}
+            <form onSubmit={handleSignup}>
                 <div className="form-group">
                     <label>Username:</label>
                     <input
@@ -50,8 +53,7 @@ const Signup = () => {
                         required
                     />
                 </div>
-                {error && <p className="error">{error}</p>}
-                <button type="submit">Signup</button>
+                <button type="submit">Sign Up</button>
             </form>
         </div>
     );

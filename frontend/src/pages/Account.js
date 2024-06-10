@@ -5,6 +5,7 @@ import '../styles/Account.css';
 
 const Account = () => {
     const [email, setEmail] = useState('');
+    const [newEmail, setNewEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
     const [message, setMessage] = useState('');
@@ -33,10 +34,11 @@ const Account = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            await axios.put('http://localhost:5000/account/email', { email }, {
+            await axios.put('http://localhost:5000/account/email', { email: newEmail }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setMessage('Email updated successfully');
+            setEmail(newEmail);
             setIsEmailEdit(false);
         } catch (err) {
             setMessage('Error updating email');
@@ -102,10 +104,11 @@ const Account = () => {
                     {isEmailEdit ? (
                         <form onSubmit={handleEmailChange}>
                             <div className="form-group">
+                                <label>New Email</label>
                                 <input
                                     type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    value={newEmail}
+                                    onChange={(e) => setNewEmail(e.target.value)}
                                     required
                                 />
                                 <div className="button-group">
@@ -115,11 +118,15 @@ const Account = () => {
                             </div>
                         </form>
                     ) : (
-                        <button onClick={() => setIsEmailEdit(true)}>Change Email</button>
+                        <button onClick={() => {
+                            setNewEmail(email);
+                            setIsEmailEdit(true);
+                        }}>Change Email</button>
                     )}
                     {isPasswordEdit ? (
                         <form onSubmit={handlePasswordChange}>
                             <div className="form-group">
+                                <label>New Password</label>
                                 <input
                                     type="password"
                                     value={password}

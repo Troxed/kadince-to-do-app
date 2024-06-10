@@ -43,6 +43,19 @@ def login():
     return jsonify({'message': 'Invalid credentials'}), 401
 
 
+@account_bp.route('/details', methods=['GET'])
+@jwt_required()
+def get_user_details():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    return jsonify({
+        'username': user.username,
+        'email': user.email
+    }), 200
+
+
 @app.route('/todos', methods=['GET', 'POST', 'OPTIONS'])
 @jwt_required()
 def manage_todos():

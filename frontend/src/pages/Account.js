@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Account.css';
@@ -6,8 +6,28 @@ import '../styles/Account.css';
 const Account = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
     const [message, setMessage] = useState('');
+    const [isEmailEdit, setIsEmailEdit] = useState(false);
+    const [isPasswordEdit, setIsPasswordEdit] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchUserDetails = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://localhost:5000/account/details', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setUsername(response.data.username);
+                setEmail(response.data.email);
+            } catch (err) {
+                setMessage('Error fetching user details');
+            }
+        };
+
+        fetchUserDetails();
+    }, []);
 
     const handleEmailChange = async (e) => {
         e.preventDefault();
@@ -17,6 +37,7 @@ const Account = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setMessage('Email updated successfully');
+            setIsEmailEdit(false);
         } catch (err) {
             setMessage('Error updating email');
         }
@@ -30,6 +51,7 @@ const Account = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setMessage('Password updated successfully');
+            setIsPasswordEdit(false);
         } catch (err) {
             setMessage('Error updating password');
         }
@@ -64,35 +86,59 @@ const Account = () => {
     };
 
     return (
-        <div className="account-container">
-            <h2>Account Settings</h2>
-            {message && <p>{message}</p>}
-            <form onSubmit={handleEmailChange}>
-                <div className="form-group">
-                    <label>Change Email:</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <button type="submit">Update Email</button>
+        <div className="account-page">
+            <h2 className="account-title">Account Settings</h2>
+            <div className="account-container">
+                {message && <p>{message}</p>}
+                <div className="user-details">
+                    <div className="user-info">
+                        <p className="username-value">{username}</p>
+                    </div>
+                    <div className="user-info">
+                        <p className="user-email-value">{email}</p>
+                    </div>
                 </div>
-            </form>
-            <form onSubmit={handlePasswordChange}>
-                <div className="form-group">
-                    <label>Change Password:</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                    <button type="submit">Update Password</button>
+                <div className="account-actions">
+                    {isEmailEdit ? (
+                        <form onSubmit={handleEmailChange}>
+                            <div className="form-group">
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                                <div className="button-group">
+                                    <button type="button" onClick={() => setIsEmailEdit(false)}>Cancel</button>
+                                    <button type="submit">Save</button>
+                                </div>
+                            </div>
+                        </form>
+                    ) : (
+                        <button onClick={() => setIsEmailEdit(true)}>Change Email</button>
+                    )}
+                    {isPasswordEdit ? (
+                        <form onSubmit={handlePasswordChange}>
+                            <div className="form-group">
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <div className="button-group">
+                                    <button type="button" onClick={() => setIsPasswordEdit(false)}>Cancel</button>
+                                    <button type="submit">Save</button>
+                                </div>
+                            </div>
+                        </form>
+                    ) : (
+                        <button onClick={() => setIsPasswordEdit(true)}>Change Password</button>
+                    )}
+                    <button onClick={handleDeleteAccount} className="delete-button">Delete Account</button>
+                    <button onClick={handleResetAccount} className="reset-button">Reset Account</button>
                 </div>
-            </form>
-            <button onClick={handleDeleteAccount} className="delete-button">Delete Account</button>
-            <button onClick={handleResetAccount} className="reset-button">Reset Account</button>
+            </div>
         </div>
     );
 };

@@ -1,5 +1,4 @@
 from . import db, bcrypt
-from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class User(db.Model):
@@ -20,7 +19,6 @@ class User(db.Model):
             'username': self.username,
             'email': self.email
         }
-
 
 
 class ToDo(db.Model):

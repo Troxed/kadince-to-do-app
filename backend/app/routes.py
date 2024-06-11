@@ -3,6 +3,9 @@ from . import app, db, bcrypt
 from .models import User, ToDo
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime
+from .tasks import schedule_email
+import re
+
 
 account_bp = Blueprint('account', __name__)
 
@@ -35,25 +38,11 @@ def login():
     if request.method == 'OPTIONS':
         return '', 204
     data = request.get_json()
-    user = User.query.filter(
-        (User.username == data['username_or_email']) | (User.email == data['username_or_email'])).first()
-    if user and user.check_password(data['password']):
+    user = User.query.filter((User.username == data['username_or_email']) | (User.email == data['username_or_email'])).first()
+    if user and bcrypt.check_password_hash(user.password, data['password']):
         access_token = create_access_token(identity=user.id)
         return jsonify({'token': access_token}), 200
     return jsonify({'message': 'Invalid credentials'}), 401
-
-
-@account_bp.route('/details', methods=['GET'])
-@jwt_required()
-def get_user_details():
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'message': 'User not found'}), 404
-    return jsonify({
-        'username': user.username,
-        'email': user.email
-    }), 200
 
 
 @app.route('/todos', methods=['GET', 'POST', 'OPTIONS'])
@@ -69,16 +58,22 @@ def manage_todos():
             description=data.get('description'),
             due_date=datetime.strptime(data['due_date'], '%Y-%m-%d') if data.get('due_date') else None,
             priority=data.get('priority', 'low'),
+            reminder=data.get('reminder', False),
+            reminder_time=datetime.strptime(f"{parse_time(data['reminder_time'])[0]}:{parse_time(data['reminder_time'])[1]}", '%H:%M').time() if data.get('reminder_time') else None,
             user_id=user_id
         )
         db.session.add(todo)
         db.session.commit()
+        if todo.reminder and todo.reminder_time:
+            schedule_email(todo.id, todo.reminder_time)
         return jsonify({
             'id': todo.id,
             'title': todo.title,
             'description': todo.description,
             'due_date': todo.due_date.strftime('%Y-%m-%d') if todo.due_date else None,
             'priority': todo.priority,
+            'reminder': todo.reminder,
+            'reminder_time': todo.reminder_time.strftime('%H:%M:%S') if todo.reminder_time else None,
             'completed': todo.completed
         }), 201
     else:
@@ -96,8 +91,25 @@ def manage_todos():
             'description': todo.description,
             'due_date': todo.due_date.strftime('%Y-%m-%d') if todo.due_date else None,
             'priority': todo.priority,
+            'reminder': todo.reminder,
+            'reminder_time': todo.reminder_time.strftime('%H:%M:%S') if todo.reminder_time else None,
             'completed': todo.completed
         } for todo in todos]), 200
+
+
+def parse_time(time_str):
+    match = re.match(r"(\d+):(\d+) (\w+)", time_str)
+    if match:
+        hour, minute, period = match.groups()
+        hour = int(hour)
+        minute = int(minute)
+        if period.upper() == 'PM' and hour != 12:
+            hour += 12
+        elif period.upper() == 'AM' and hour == 12:
+            hour = 0
+        return hour, minute
+    else:
+        raise ValueError("Invalid time format")
 
 
 @app.route('/todos/<int:id>', methods=['PUT', 'DELETE', 'OPTIONS'])
@@ -122,21 +134,43 @@ def update_or_delete_todo(id):
             todo.due_date = datetime.strptime(data['due_date'], '%Y-%m-%d') if data.get('due_date') else todo.due_date
         if 'priority' in data:
             todo.priority = data.get('priority', todo.priority)
+        if 'reminder' in data:
+            todo.reminder = data.get('reminder', todo.reminder)
+        if 'reminder_time' in data:
+            hour, minute = parse_time(data['reminder_time'])
+            todo.reminder_time = datetime.strptime(f'{hour}:{minute}', '%H:%M').time() if data.get('reminder_time') else todo.reminder_time
         if 'completed' in data:
             todo.completed = data.get('completed', todo.completed)
         db.session.commit()
+        if todo.reminder and todo.reminder_time:
+            schedule_email(todo.id, todo.reminder_time)
         return jsonify({
             'id': todo.id,
             'title': todo.title,
             'description': todo.description,
             'due_date': todo.due_date.strftime('%Y-%m-%d') if todo.due_date else None,
             'priority': todo.priority,
+            'reminder': todo.reminder,
+            'reminder_time': todo.reminder_time.strftime('%H:%M:%S') if todo.reminder_time else None,
             'completed': todo.completed
         }), 200
     else:
         db.session.delete(todo)
         db.session.commit()
         return jsonify({'message': 'ToDo deleted successfully'}), 200
+
+
+@account_bp.route('/details', methods=['GET', 'OPTIONS'])
+@jwt_required()
+def get_account_details():
+    if request.method == 'OPTIONS':
+        return '', 204
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    return jsonify({
+        'username': user.username,
+        'email': user.email
+    })
 
 
 @account_bp.route('/email', methods=['PUT', 'OPTIONS'])
@@ -171,17 +205,9 @@ def delete_account():
     if request.method == 'OPTIONS':
         return '', 204
     user_id = get_jwt_identity()
-
-    # Delete all todos associated with the user
-    todos = ToDo.query.filter_by(user_id=user_id).all()
-    for todo in todos:
-        db.session.delete(todo)
-
-    # Delete the user
     user = User.query.get(user_id)
     db.session.delete(user)
     db.session.commit()
-
     return '', 204
 
 

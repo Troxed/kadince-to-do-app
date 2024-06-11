@@ -26,8 +26,10 @@ class ToDo(db.Model):
     title = db.Column(db.String(140), nullable=False)
     description = db.Column(db.String(280))
     due_date = db.Column(db.Date)
-    priority = db.Column(db.String(10), default='low')
+    priority = db.Column(db.String(10), default='Low')
     completed = db.Column(db.Boolean, default=False)
+    reminder = db.Column(db.Boolean, default=False)
+    reminder_time = db.Column(db.Time)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('todos', lazy=True))
 

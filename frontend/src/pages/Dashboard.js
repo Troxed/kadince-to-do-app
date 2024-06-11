@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import dayjs from 'dayjs';
+import axios from 'axios';
 import apiClient from '../api/axios';
-import '../styles/Dashboard.css';
 import Modal from '../components/Modal/Modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faEdit, faCheck, faUndo, faPlus } from '@fortawesome/free-solid-svg-icons';
-import dayjs from 'dayjs';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'; // Import the plugin
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'; // Import the plugin
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import 'react-datepicker/dist/react-datepicker.css';
+import '../styles/Dashboard.css';
 
-dayjs.extend(isSameOrBefore); // Extend dayjs with the plugin
-dayjs.extend(isSameOrAfter); // Extend dayjs with the plugin
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
 
 const Dashboard = () => {
     const [todos, setTodos] = useState([]);
@@ -22,6 +25,10 @@ const Dashboard = () => {
     const [description, setDescription] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [priority, setPriority] = useState('low');
+    const [reminder, setReminder] = useState(false);
+    const [reminderHour, setReminderHour] = useState('12');
+    const [reminderMinute, setReminderMinute] = useState('00');
+    const [reminderPeriod, setReminderPeriod] = useState('AM');
 
     useEffect(() => {
         const fetchTodos = async () => {
@@ -46,23 +53,27 @@ const Dashboard = () => {
         try {
             const token = localStorage.getItem('token');
             let response;
+            const reminderTime = `${reminderHour}:${reminderMinute} ${reminderPeriod}`;
             if (editingTodo) {
-                response = await apiClient.put(`/todos/${editingTodo.id}`, {
+                response = await axios.put(`http://localhost:5000/todos/${editingTodo.id}`, {
                     title,
                     description,
                     due_date: dueDate,
                     priority,
-                    completed: editingTodo.completed
+                    reminder,
+                    reminder_time: reminderTime
                 }, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setTodos(todos.map(todo => todo.id === editingTodo.id ? response.data : todo));
             } else {
-                response = await apiClient.post('/todos', {
+                response = await axios.post('http://localhost:5000/todos', {
                     title,
                     description,
                     due_date: dueDate,
-                    priority
+                    priority,
+                    reminder,
+                    reminder_time: reminderTime
                 }, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -74,6 +85,10 @@ const Dashboard = () => {
             setDescription('');
             setDueDate('');
             setPriority('low');
+            setReminder(false);
+            setReminderHour('12');
+            setReminderMinute('00');
+            setReminderPeriod('AM');
         } catch (err) {
             setError('Error creating or updating to-do. Please try again.');
         }
@@ -85,6 +100,11 @@ const Dashboard = () => {
         setDescription(todo.description);
         setDueDate(todo.due_date);
         setPriority(todo.priority);
+        setReminder(todo.reminder);
+        const [hour, minute, period] = todo.reminder_time.split(/[: ]/);
+        setReminderHour(hour);
+        setReminderMinute(minute);
+        setReminderPeriod(period);
         setShowForm(true);
     };
 
@@ -120,7 +140,7 @@ const Dashboard = () => {
         if (filter === 'completed') return todo.completed;
         if (filter === 'myDay') return dayjs(todo.due_date).isSame(dayjs(), 'day') && !todo.completed;
         if (filter === 'myWeek') return dayjs(todo.due_date).isSameOrBefore(dayjs().add(7, 'day')) && dayjs(todo.due_date).isAfter(dayjs().subtract(1, 'day')) && !todo.completed;
-        return false; // Ensures a boolean value is returned
+        return false;
     });
 
     if (loading) {
@@ -178,6 +198,7 @@ const Dashboard = () => {
                                         <p>{todo.description}</p>
                                         <p>Due: {todo.due_date || 'No due date'}</p>
                                         <p>Priority: {todo.priority}</p>
+                                        <p>Reminder: {todo.reminder ? 'Yes' : 'No'}</p>
                                         <button onClick={() => handleEdit(todo)} className="todo-button" data-tooltip="Edit To-Do"><FontAwesomeIcon icon={faEdit} /></button>
                                         <button onClick={() => handleDelete(todo.id)} className="todo-button" data-tooltip="Delete To-Do"><FontAwesomeIcon icon={faTrashAlt} /></button>
                                         <button onClick={() => handleComplete(todo)} className="todo-button" data-tooltip={todo.completed ? "Mark as Incomplete" : "Mark as Complete"}>{todo.completed ? <FontAwesomeIcon icon={faUndo} /> : <FontAwesomeIcon icon={faCheck} />}</button>
@@ -217,11 +238,43 @@ const Dashboard = () => {
                     <div className="form-group">
                         <label>Priority:</label>
                         <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                            <option value="urgent">Urgent</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
                         </select>
+                    </div>
+                    <div className="form-group">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={reminder}
+                                onChange={(e) => setReminder(e.target.checked)}
+                            />
+                            Set Reminder
+                        </label>
+                        {reminder && (
+                            <div className="form-group">
+                                <label>Reminder Time:</label>
+                                <div className="reminder-time">
+                                    <select value={reminderHour} onChange={(e) => setReminderHour(e.target.value)}>
+                                        {Array.from({ length: 12 }, (_, i) => (
+                                            <option key={i + 1} value={i + 1}>{i + 1}</option>
+                                        ))}
+                                    </select>
+                                    <span>:</span>
+                                    <select value={reminderMinute} onChange={(e) => setReminderMinute(e.target.value)}>
+                                        {Array.from({ length: 60 }, (_, i) => (
+                                            <option key={i} value={i < 10 ? `0${i}` : i}>{i < 10 ? `0${i}` : i}</option>
+                                        ))}
+                                    </select>
+                                    <select value={reminderPeriod} onChange={(e) => setReminderPeriod(e.target.value)}>
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <button type="submit">{editingTodo ? 'Update' : 'Create'}</button>
                 </form>

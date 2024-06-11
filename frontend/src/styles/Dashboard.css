@@ -1,4 +1,3 @@
-/* Styles for the Dashboard page */
 .dashboard-container {
     padding: 20px;
     max-width: 800px;
@@ -219,4 +218,39 @@
     border-radius: 5px;
     white-space: nowrap;
     font-size: 0.75rem;
+}
+
+.create-todo-form .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.create-todo-form .form-group input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.reminder-time {
+    display: flex;
+    align-items: center;
+}
+
+.reminder-time select {
+    margin-right: 5px;
+}
+
+/* Minimal scrollbar styles */
+.todo-list::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
+
+.todo-list::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Track color */
+}
+
+.todo-list::-webkit-scrollbar-thumb {
+    background-color: #c8e471; /* Scrollbar color */
+    border-radius: 10px; /* Rounded corners */
+    border: 2px solid #f1f1f1; /* Padding around the scrollbar */
 }

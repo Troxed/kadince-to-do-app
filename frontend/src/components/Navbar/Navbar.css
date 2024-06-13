@@ -23,14 +23,14 @@
 }
 
 .kadince-logo {
-    height: 40px; /* Adjust the height as needed */
+    height: 40px;
 }
 
 .navbar-title {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    font-family: 'Pacifico', cursive; /* Use a cursive font like Pacifico */
+    font-family: 'Pacifico', cursive;
     font-size: 2rem;
     color: #333;
     margin: 0;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import '../styles/Account.css';
 
 const Account = () => {
@@ -144,6 +144,9 @@ const Account = () => {
                     )}
                     <button onClick={handleDeleteAccount} className="delete-button">Delete Account</button>
                     <button onClick={handleResetAccount} className="reset-button">Reset Account</button>
+                </div>
+                <div className="back-link">
+                    <Link to="/dashboard">Back</Link>
                 </div>
             </div>
         </div>

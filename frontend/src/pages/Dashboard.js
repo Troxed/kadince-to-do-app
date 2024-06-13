@@ -190,15 +190,15 @@ const Dashboard = () => {
                     .map(([date, todos]) => (
                         <li key={date}>
                             {filter !== 'myDay' && (
-                                <h3>{dayjs(date).isSame(dayjs(), 'day') ? 'Today' : dayjs(date).isSame(dayjs().add(1, 'day'), 'day') ? 'Tomorrow' : dayjs(date).isSame(dayjs().subtract(1, 'day'), 'day') ? 'Yesterday' : dayjs(date).format('dddd, MMMM D')}</h3>
+                                <h1>{dayjs(date).isSame(dayjs(), 'day') ? 'Today' : dayjs(date).isSame(dayjs().add(1, 'day'), 'day') ? 'Tomorrow' : dayjs(date).isSame(dayjs().subtract(1, 'day'), 'day') ? 'Yesterday' : dayjs(date).format('dddd, MMMM D')}</h1>
                             )}
                             <ul className="todo-date-group">
                                 {todos.map(todo => (
                                     <li key={todo.id} className="todo-item">
                                         <h3>{todo.title}</h3>
                                         <p>{todo.description}</p>
-                                        <p>Due: {todo.due_date || 'No due date'}</p>
                                         <p>Priority: {todo.priority}</p>
+                                        <p>Due: {todo.due_date || 'No due date'}</p>
                                         <button onClick={() => handleEdit(todo)} className="todo-button" data-tooltip="Edit To-Do"><FontAwesomeIcon icon={faEdit} /></button>
                                         <button onClick={() => handleDelete(todo.id)} className="todo-button" data-tooltip="Delete To-Do"><FontAwesomeIcon icon={faTrashAlt} /></button>
                                         <button onClick={() => handleComplete(todo)} className="todo-button" data-tooltip={todo.completed ? "Mark as Incomplete" : "Mark as Complete"}>{todo.completed ? <FontAwesomeIcon icon={faUndo} /> : <FontAwesomeIcon icon={faCheck} />}</button>

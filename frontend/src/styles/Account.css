@@ -103,3 +103,18 @@
     justify-content: center;
     width: 100%;
 }
+
+.back-link {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.back-link a {
+    color: #333;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-link a:hover {
+    text-decoration: underline;
+}

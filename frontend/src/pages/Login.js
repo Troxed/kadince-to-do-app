@@ -10,12 +10,18 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
         try {
             const response = await apiClient.post('/login', { username_or_email: usernameOrEmail, password });
             localStorage.setItem('token', response.data.token);
             navigate('/dashboard');
         } catch (err) {
-            setError('Invalid credentials. Please try again.');
+            if (err.response && err.response.status === 401) {
+                setError('Invalid username/email or password. Please try again.');
+            } else {
+                setError('An error occurred. Please try again later.');
+            }
+            setPassword('');
         }
     };
 
@@ -42,9 +48,11 @@ const Login = () => {
                     />
                 </div>
                 {error && <p className="error">{error}</p>}
-                <button type="submit">Login</button>
+                <div className="button-container">
+                    <button type="submit" className="login-button">Login</button>
+                </div>
             </form>
-            <p>Don't have an account? <Link to="/signup">Register</Link></p>
+            <p>Don't have an account? <Link to="/signup">Sign Up</Link></p>
         </div>
     );
 };

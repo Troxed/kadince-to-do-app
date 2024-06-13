@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import DatePicker from 'react-datepicker';
 import dayjs from 'dayjs';
 import axios from 'axios';
 import apiClient from '../api/axios';
@@ -49,52 +48,54 @@ const Dashboard = () => {
     }, []);
 
     const handleCreateOrUpdateTodo = async (e) => {
-        e.preventDefault();
-        try {
-            const token = localStorage.getItem('token');
-            let response;
-            const reminderTime = `${reminderHour}:${reminderMinute} ${reminderPeriod}`;
-            if (editingTodo) {
-                response = await axios.put(`http://localhost:5000/todos/${editingTodo.id}`, {
-                    title,
-                    description,
-                    due_date: dueDate,
-                    priority,
-                    reminder,
-                    reminder_time: reminderTime
-                }, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setTodos(todos.map(todo => todo.id === editingTodo.id ? response.data : todo));
-            } else {
-                response = await axios.post('http://localhost:5000/todos', {
-                    title,
-                    description,
-                    due_date: dueDate,
-                    priority,
-                    reminder,
-                    reminder_time: reminderTime
-                }, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setTodos([...todos, response.data]);
-            }
-            setShowForm(false);
-            setEditingTodo(null);
-            setTitle('');
-            setDescription('');
-            setDueDate('');
-            setPriority('low');
-            setReminder(false);
-            setReminderHour('12');
-            setReminderMinute('00');
-            setReminderPeriod('AM');
-        } catch (err) {
-            setError('Error creating or updating to-do. Please try again.');
+    e.preventDefault();
+    try {
+        const token = localStorage.getItem('token');
+        let response;
+        const reminderTime = `${reminderHour}:${reminderMinute} ${reminderPeriod}`;
+        if (editingTodo) {
+            response = await axios.put(`http://localhost:5000/todos/${editingTodo.id}`, {
+                title,
+                description,
+                due_date: dueDate,
+                priority,
+                reminder,
+                reminder_time: reminderTime
+            }, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setTodos(todos.map(todo => todo.id === editingTodo.id ? response.data : todo));
+        } else {
+            response = await axios.post('http://localhost:5000/todos', {
+                title,
+                description,
+                due_date: dueDate,
+                priority,
+                reminder,
+                reminder_time: reminderTime
+            }, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setTodos([...todos, response.data]);
         }
-    };
+        setShowForm(false);
+        setEditingTodo(null); // Reset editingTodo to null after creating or updating
+        setTitle('');
+        setDescription('');
+        setDueDate('');
+        setPriority('low');
+        setReminder(false);
+        setReminderHour('12');
+        setReminderMinute('00');
+        setReminderPeriod('AM');
+    } catch (err) {
+        setError('Error creating or updating to-do. Please try again.');
+    }
+};
+
 
     const handleEdit = (todo) => {
+        console.log('Editing todo:', todo);
         setEditingTodo(todo);
         setTitle(todo.title);
         setDescription(todo.description);
@@ -177,7 +178,7 @@ const Dashboard = () => {
             </div>
             <div className="view-title">{getTitle()}</div>
             <div className="date-title">{dayjs().format('dddd, MMMM D, YYYY')}</div>
-            <button onClick={() => setShowForm(true)} className="create-todo-button" data-tooltip="Create To-Do"><FontAwesomeIcon icon={faPlus} /></button>
+            <button onClick={() => { setEditingTodo(null); setShowForm(true); }} className="create-todo-button" data-tooltip="Create To-Do"><FontAwesomeIcon icon={faPlus} /></button>
             <ul className="todo-list">
                 {Object.entries(filteredTodos.reduce((acc, todo) => {
                     const dateKey = dayjs(todo.due_date).format('YYYY-MM-DD');
@@ -198,7 +199,6 @@ const Dashboard = () => {
                                         <p>{todo.description}</p>
                                         <p>Due: {todo.due_date || 'No due date'}</p>
                                         <p>Priority: {todo.priority}</p>
-                                        <p>Reminder: {todo.reminder ? 'Yes' : 'No'}</p>
                                         <button onClick={() => handleEdit(todo)} className="todo-button" data-tooltip="Edit To-Do"><FontAwesomeIcon icon={faEdit} /></button>
                                         <button onClick={() => handleDelete(todo.id)} className="todo-button" data-tooltip="Delete To-Do"><FontAwesomeIcon icon={faTrashAlt} /></button>
                                         <button onClick={() => handleComplete(todo)} className="todo-button" data-tooltip={todo.completed ? "Mark as Incomplete" : "Mark as Complete"}>{todo.completed ? <FontAwesomeIcon icon={faUndo} /> : <FontAwesomeIcon icon={faCheck} />}</button>
@@ -208,7 +208,7 @@ const Dashboard = () => {
                         </li>
                     ))}
             </ul>
-            <Modal show={showForm} handleClose={() => setShowForm(false)}>
+            <Modal show={showForm} handleClose={() => setShowForm(false)} title={editingTodo ? 'Edit To-Do' : 'Create To-Do'}>
                 <form onSubmit={handleCreateOrUpdateTodo} className="create-todo-form">
                     <div className="form-group">
                         <label>Title:</label>
@@ -244,15 +244,16 @@ const Dashboard = () => {
                             <option value="Urgent">Urgent</option>
                         </select>
                     </div>
-                    <div className="form-group">
+                    <div className="form-group-reminder">
                         <label>
-                            <input
-                                type="checkbox"
-                                checked={reminder}
-                                onChange={(e) => setReminder(e.target.checked)}
-                            />
-                            Set Reminder
+                            Email reminder?
                         </label>
+                        <input
+                            type="checkbox"
+                            checked={reminder}
+                            onChange={(e) => setReminder(e.target.checked)}
+                        />
+                    </div>
                         {reminder && (
                             <div className="form-group">
                                 <label>Reminder Time:</label>
@@ -275,7 +276,6 @@ const Dashboard = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
                     <button type="submit">{editingTodo ? 'Update' : 'Create'}</button>
                 </form>
             </Modal>

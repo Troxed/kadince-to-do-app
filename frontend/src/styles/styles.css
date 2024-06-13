@@ -12,7 +12,6 @@ h2 {
     color: #333;
 }
 
-/* Login and Signup Containers */
 .login-container, .signup-container {
     width: 300px;
     margin: 50px auto;
@@ -53,7 +52,7 @@ button {
 }
 
 button:hover {
-    background-color: #a4d255; /* Slightly darker shade for hover effect */
+    background-color: #a4d255;
 }
 
 .button-container {

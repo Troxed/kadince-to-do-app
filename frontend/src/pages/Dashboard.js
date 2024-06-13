@@ -199,7 +199,6 @@ const Dashboard = () => {
                                         <p>{todo.description}</p>
                                         <p>Due: {todo.due_date || 'No due date'}</p>
                                         <p>Priority: {todo.priority}</p>
-                                        <p>Reminder: {todo.reminder ? 'Yes' : 'No'}</p>
                                         <button onClick={() => handleEdit(todo)} className="todo-button" data-tooltip="Edit To-Do"><FontAwesomeIcon icon={faEdit} /></button>
                                         <button onClick={() => handleDelete(todo.id)} className="todo-button" data-tooltip="Delete To-Do"><FontAwesomeIcon icon={faTrashAlt} /></button>
                                         <button onClick={() => handleComplete(todo)} className="todo-button" data-tooltip={todo.completed ? "Mark as Incomplete" : "Mark as Complete"}>{todo.completed ? <FontAwesomeIcon icon={faUndo} /> : <FontAwesomeIcon icon={faCheck} />}</button>
@@ -245,15 +244,16 @@ const Dashboard = () => {
                             <option value="Urgent">Urgent</option>
                         </select>
                     </div>
-                    <div className="form-group">
+                    <div className="form-group-reminder">
                         <label>
                             Email reminder?
-                            <input
-                                type="checkbox"
-                                checked={reminder}
-                                onChange={(e) => setReminder(e.target.checked)}
-                            />
                         </label>
+                        <input
+                            type="checkbox"
+                            checked={reminder}
+                            onChange={(e) => setReminder(e.target.checked)}
+                        />
+                    </div>
                         {reminder && (
                             <div className="form-group">
                                 <label>Reminder Time:</label>
@@ -276,7 +276,6 @@ const Dashboard = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
                     <button type="submit">{editingTodo ? 'Update' : 'Create'}</button>
                 </form>
             </Modal>
